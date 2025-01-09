@@ -13,50 +13,47 @@ const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 // Step 0: Store your API key here for reference and easy access.
 const API_KEY = "live_V1hbANkwoLecakcBbdq9WVvBt2jlOO1R70PJ8n0ch66XNgYHuI03Wa9fsOdosiTI";
 
+// 1. Create an async function "initialLoad" 
+// 2. Create an event handler for breedSelect
+// 3. Fork your own sandbox, creating a new one named "JavaScript Axios Lab."
+
+
 /**
- * 1. Create an async function "initialLoad" that does the following:
- *  - Retrieve a list of breeds from the cat API using fetch().
- *  - Create new <options> for each of these breeds, and append them to breedSelect.
- *  - Each option should have a value attribute equal to the id of the breed.
- *  - Each option should display text equal to the name of the breed.
- * This function should execute immediately.
+ * 4. Change all of your fetch() functions to axios!
+    * - axios has already been imported for you within index.js.
+    * - If you've done everything correctly up to this point, this should be simple.
+    * - If it is not simple, take a moment to re-evaluate your original code.
+    * - Hint: Axios has the ability to set default headers. Use this to your advantage
+    *   by setting a default header with your API key so that you do not have to
+    *   send it manually with all of your requests! You can also set a default base URL!
  */
 
-// Step 1
 
-// Create new header to store API KEY 
-const headers = new Headers({
+// Reuse the API key for headers
+const headers = {
   "Content-Type": "application/json",
-  "x-api-key": "API-KEY",
-});
-
-//Create options for request with new header
-const requestOptions = {
-  headers: headers,
-  redirect: "follow",
+  "x-api-key": API_KEY,
 };
 
 let breeds = [];
 
+
 async function initialLoad() {
   try {
     // Fetch the list of cat breeds
-    const response = await fetch(
-      "https://api.thecatapi.com/v1/breeds",
-      requestOptions
-    );
+    const response = await axios.get("https://api.thecatapi.com/v1/breeds", {
+      headers,
+    });
 
-    breeds = await response.json();
-
-    //console.log(breeds);
+    breeds = await response.data;
+ 
 
     // Populate the breedSelect element with options
     breeds.forEach((breed) => {
       let option = document.createElement("option");
-      option.setAttribute('value', breed.id); // Set the value to the breed ID
+      option.setAttribute("value", breed.id); // Set the value to the breed ID
       option.textContent = breed.name; // Set the displayed text to the breed name
-      // console.log(option);
-      // console.log(breedSelect);
+
       breedSelect.appendChild(option); // Append the option to the select element
     });
   } catch (err) {
@@ -65,25 +62,6 @@ async function initialLoad() {
 }
 
 initialLoad();
-
-
-/**
- * 2. Create an event handler for breedSelect that does the following:
- *  - Retrieve information on the selected breed from the cat API using fetch().
- *  - Make sure your request is receiving multiple array items!
- *  - Check the API documentation if you're only getting a single object.
- *  - For each object in the response array, create a new element for the carousel.
- *  - Append each of these new elements to the carousel.
- *  - Use the other data you have been given to create an informational section within the infoDump element.
- *  - Be creative with how you create DOM elements and HTML.
- *  - Feel free to edit index.html and styles.css to suit your needs, but be careful!
- *  - Remember that functionality comes first, but user experience and design are important.
- *  - Each new selection should clear, re-populate, and restart the Carousel.
- *  - Add a call to this function to the end of your initialLoad function above to create the initial carousel.
- */
-
-// Step 2
-
 
 // Create an informational section in the infoDump
 function retrieveBreedInfo() {
@@ -109,19 +87,21 @@ function retrieveBreedInfo() {
   }
 }
 
-
 async function retrieveBreedImg() {
   try {
     const breedId = breedSelect.value;
 
     // Fetch information on the selected breed
-    const response = await fetch(
-      `https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}&limit=6`, // Limit to 6 images for the carousel
-      requestOptions
+    const response = await axios.get(
+      `https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}&limit=6`,
+      {
+        headers,
+      }
     );
-    const data = await response.json();
 
-    console.log(data);
+    const data = await response.data;
+
+    // console.log(data);
     // Clear the carousel
     Carousel.clear();
     infoDump.textContent = "";
@@ -136,7 +116,7 @@ async function retrieveBreedImg() {
 
     // Create an informational section in the infoDump
     retrieveBreedInfo();
-
+    
   } catch (err) {
     console.log(err);
   }
@@ -146,19 +126,6 @@ breedSelect.addEventListener("change", retrieveBreedImg);
 
 
 
-/**
- * 3. Fork your own sandbox, creating a new one named "JavaScript Axios Lab."
- */
-
-/**
- * 4. Change all of your fetch() functions to axios!
- * - axios has already been imported for you within index.js.
- * - If you've done everything correctly up to this point, this should be simple.
- * - If it is not simple, take a moment to re-evaluate your original code.
- * - Hint: Axios has the ability to set default headers. Use this to your advantage
- *   by setting a default header with your API key so that you do not have to
- *   send it manually with all of your requests! You can also set a default base URL!
- */
 
 /**
  * 5. Add axios interceptors to log the time between request and response to the console.
