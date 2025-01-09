@@ -37,6 +37,35 @@ const headers = {
 
 let breeds = [];
 
+//Add axios interceptors for start point.
+
+axios.interceptors.request.use(request => {
+  request.metadata = request.metadata || {};
+  request.metadata.startTime = new Date().getTime();
+  //console.log(`Start request at ${request.metadata.startTime}`);
+  return request;
+});
+
+//Add axios interceptors to log the time between request and response to the console.
+
+axios.interceptors.response.use(
+  (response) => {
+      response.config.metadata.endTime = new Date().getTime();
+      //console.log(`Recieve data at ${response.config.metadata.endTime}`);
+      response.config.metadata.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
+
+      console.log(`Request took ${response.config.metadata.durationInMS} milliseconds.`)
+      return response;
+  },
+  (error) => {
+      error.config.metadata.endTime = new Date().getTime();
+      error.config.metadata.durationInMS = error.config.metadata.endTime - error.config.metadata.startTime;
+
+      console.log(`Request took ${error.config.metadata.durationInMS} milliseconds.`)
+      throw error;
+});
+
+
 
 async function initialLoad() {
   try {
@@ -112,11 +141,11 @@ async function retrieveBreedImg() {
     });
 
     //Activate buttons on the carousel
-    //Carousel.start();
+    Carousel.start();
 
     // Create an informational section in the infoDump
     retrieveBreedInfo();
-    
+
   } catch (err) {
     console.log(err);
   }
