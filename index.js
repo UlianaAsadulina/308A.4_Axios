@@ -30,6 +30,14 @@ const headers = {
   "x-api-key": API_KEY,
 };
 
+
+const axiosInstance = axios.create({
+  baseURL: "https://api.thecatapi.com/v1",
+  headers: {
+    "x-api-key": API_KEY, // API key for authentication
+  },
+});
+
 let breeds = [];
 
 
@@ -41,9 +49,10 @@ let breeds = [];
 
 //Add axios interceptors for start point.
 
-axios.interceptors.request.use(request => {
+axiosInstance.interceptors.request.use(request => {
   request.metadata = request.metadata || {};
   request.metadata.startTime = new Date().getTime();
+
  // reset the progress with each request.
   progressBar.style.width = "0%";
 
@@ -55,7 +64,7 @@ axios.interceptors.request.use(request => {
 
 //Add axios interceptors to log the time between request and response to the console.
 
-axios.interceptors.response.use(
+axiosInstance.interceptors.response.use(
   (response) => {
       response.config.metadata.endTime = new Date().getTime();
       //console.log(`Recieve data at ${response.config.metadata.endTime}`);
@@ -84,9 +93,7 @@ function updateProgress (progressEvent) {
   console.log(percentage+"%");
 
   //modify progressBar width style property to align with the request progress.
-  progressBar.style.width = percentage+"%";
-
- 
+  progressBar.style.width = percentage+"%"; 
 
 }
 
@@ -94,21 +101,21 @@ function updateProgress (progressEvent) {
 async function initialLoad() {
   try {
     // Fetch the list of cat breeds
-    const response = await axios.get("https://api.thecatapi.com/v1/breeds", { 
-      headers, 
-      onDownloadProgress: updateProgress, 
-  });
+    
+    const response = await axiosInstance.get("/breeds", {
+                    onDownloadProgress: updateProgress, // Attach the progress function
+    });
 
-    breeds = await response.data;
- 
+    breeds = await response.data; 
 
     // Populate the breedSelect element with options
     breeds.forEach((breed) => {
-      let option = document.createElement("option");
-      option.setAttribute("value", breed.id); // Set the value to the breed ID
-      option.textContent = breed.name; // Set the displayed text to the breed name
-      breedSelect.appendChild(option); // Append the option to the select element
+        let option = document.createElement("option");
+        option.setAttribute("value", breed.id); // Set the value to the breed ID
+        option.textContent = breed.name; // Set the displayed text to the breed name
+        breedSelect.appendChild(option); // Append the option to the select element
     });
+
   } catch (err) {
     console.log(err);
   }
@@ -127,11 +134,11 @@ function retrieveBreedInfo() {
     if (selectedBreed) {
       // Create and append breed information
       const breedInfo = `
-        <h2>${selectedBreed.name}</h2>
-        <p>${selectedBreed.description}</p>
-        <p><strong>Temperament:</strong> ${selectedBreed.temperament}</p>
-        <p><strong>Origin:</strong> ${selectedBreed.origin}</p>
-        <p><strong>Life Span:</strong> ${selectedBreed.life_span} years</p>
+          <h2>${selectedBreed.name}</h2>;
+          <p>${selectedBreed.description}</p>;
+          <p><strong>Temperament:</strong> ${selectedBreed.temperament}</p>;
+          <p><strong>Origin:</strong> ${selectedBreed.origin}</p>;
+          <p><strong>Life Span:</strong> ${selectedBreed.life_span} years</p>;
       `;
       infoDump.innerHTML = breedInfo;
     }
@@ -164,32 +171,23 @@ async function retrieveBreedImg() {
     const breedId = breedSelect.value;
 
     // Fetch information on the selected breed
-    const response = await axios.get(
-      `https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}&limit=6`,
-      {
-        headers,
-        onDownloadProgress: updateProgress, 
-      }
-    );
+
+    const response = await axiosInstance.get("/images/search", {
+      params: {
+        breed_ids: breedId, // Pass the breed ID dynamically
+        limit: 6,          // Limit the number of results pictures
+      },
+      onDownloadProgress: updateProgress, // Attach the progress function
+    });
+    
 
     const data = await response.data;
 
-    // console.log(data);
-
     // Clear the info section
     clearInfo();
+
+    //Add images to Carousel
     addArrayOfImages(data);
-    /** 
-    Carousel.clear();
-    infoDump.innerHTML = '';
-
-    data.forEach((img) => {
-      let breedImg = Carousel.createCarouselItem(img.url, "...", img.id);
-      Carousel.appendCarousel(breedImg);
-    });
-
-    //Activate buttons on the carousel
-    Carousel.start();*/
 
     // Call for information about selected breed
     retrieveBreedInfo();
@@ -243,12 +241,6 @@ breedSelect.addEventListener("change", retrieveBreedImg);
  */
 
 
-const axiosInstance = axios.create({
-  baseURL: "https://api.thecatapi.com/v1",
-  headers: {
-    "x-api-key": API_KEY, // API key for authentication
-  },
-});
 
 const user = "Uliana";
 
@@ -282,14 +274,7 @@ export async function favourite(imgId) {
         sub_id: user,
       };
 
-      // const postResponse = await axiosInstance.post("/favourites", load);
-      // const data = await postResponse.data;
-      // console.log(data);
-      // Fetch all favorites for my sub_id
-      const favorites = await allFavImg();
-
-      //console.log(favorites);
-      
+      const favorites = await allFavImg();      
       
       // Check if the image is already favorited
       const favorite = favorites.find((fav) => fav.image_id === imgId);
@@ -300,8 +285,7 @@ export async function favourite(imgId) {
 
         const deleteResponse = await axiosInstance.delete(`/favourites/${favorite.id}`);
         const dataDelete = await deleteResponse.data;
-        //console.log(dataDelete);
-        //console.log("Img deleted from Favorites.");
+    
         alert('You deleted this picture from Favorite');
       } else {
         // If not favorited, send POST request
@@ -309,8 +293,7 @@ export async function favourite(imgId) {
        
         const postResponse = await axiosInstance.post("/favourites", load);
         const dataPost = await postResponse.data;
-        //console.log(dataPost);
-        //console.log("Img added to Favorite.");
+      
         alert('You added this picture to Favorite');
       }
 
@@ -334,24 +317,8 @@ export async function favourite(imgId) {
  */
 
 async function getFavorites() {
-  try {
-      // // Fetch all favorites for my sub_id
-      // const response = await axiosInstance.get("/favourites", {
-      //   params: {
-      //     sub_id: user,
-      //     limit: 100, // Max limit in API
-      //   },
-      //   onDownloadProgress: updateProgress,
-      // });
-
-      // const favorites = await response.data;     
-      // console.log(favorites);
-
+  try {  
       const favorites = await allFavImg();
-
-      console.log(favorites);
-
-
 
       Carousel.clear();
       clearInfo();
@@ -365,12 +332,9 @@ async function getFavorites() {
       //Activate buttons on the carousel
       Carousel.start();
 
-} catch (err) {
-  console.log(err);
-}
-
-
-
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 getFavouritesBtn.addEventListener("click", getFavorites);
