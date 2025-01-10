@@ -243,27 +243,73 @@ breedSelect.addEventListener("change", retrieveBreedImg);
  */
 
 
-const user = "Uliana S. Asadulina";
+const axiosInstance = axios.create({
+  baseURL: "https://api.thecatapi.com/v1",
+  headers: {
+    "x-api-key": API_KEY, // API key for authentication
+  },
+});
+
+const user = "Uliana";
+
+async function allFavImg () {
+  try {
+    const response = await axiosInstance.get("/favourites", {
+      params: {
+        sub_id: user,
+        limit: 100, // Max limit in API
+      },
+      onDownloadProgress: updateProgress,
+    });
+
+    const favorites = await response.data;     
+    //console.log(favorites);
+
+    return favorites;
 
 
+  } catch (err) {
+    console.log(err);
+  }
+  
+}
 
 export async function favourite(imgId) {
   try {
-    const response = await axios.post(
-      "https://api.thecatapi.com/v1/favourites",
-      {
+      const load = {
         image_id: imgId,
-        sub_id: 'user-123',
-      },
-      {
-        headers: { "x-api-key": API_KEY },
+        sub_id: user,
+      };
+
+      // const postResponse = await axiosInstance.post("/favourites", load);
+      // const data = await postResponse.data;
+      // console.log(data);
+      // Fetch all favorites for my sub_id
+      const favorites = await allFavImg();
+
+      //console.log(favorites);
+      
+      
+      // Check if the image is already favorited
+      const favorite = favorites.find((fav) => fav.image_id === imgId);
+
+      if (favorite) {
+        // If already favorited, send DELETE request
+        console.log(`Image already in Favorites. Deleting favorite with ID: ${favorite.id}`);
+
+        const deleteResponse = await axiosInstance.delete(`/favourites/${favorite.id}`);
+        const dataDelete = await deleteResponse.data;
+        //console.log(dataDelete);
+        console.log("Img deleted from Favorites.");
+      } else {
+        // If not favorited, send POST request
+        console.log(`Image not favorited. Adding to favorites.`);
+       
+        const postResponse = await axiosInstance.post("/favourites", load);
+        const dataPost = await postResponse.data;
+        //console.log(dataPost);
+        console.log("Img added to Favorite.");
       }
-    );
-
-    const data = await response.data;
-    console.log(data);
-
-
 
 
 
@@ -285,27 +331,40 @@ export async function favourite(imgId) {
  */
 
 async function getFavorites() {
+  try {
+      // // Fetch all favorites for my sub_id
+      // const response = await axiosInstance.get("/favourites", {
+      //   params: {
+      //     sub_id: user,
+      //     limit: 100, // Max limit in API
+      //   },
+      //   onDownloadProgress: updateProgress,
+      // });
 
-  // Fetch the list of favorites pictures
-  const response = await axios.get("https://api.thecatapi.com/v1/favourites?limit=30&sub_id=user-123&order=DESC", { 
-    headers, 
-    onDownloadProgress: updateProgress, 
-  });
+      // const favorites = await response.data;     
+      // console.log(favorites);
 
-  const data = await response.data;
-  console.log(data);
+      const favorites = await allFavImg();
 
-  Carousel.clear();
-  clearInfo();
+      console.log(favorites);
 
-  //Add all favorites img to carousel
-  data.forEach((img) => {
-    let newImg = Carousel.createCarouselItem(img.image.url, "...", img.image.id);
-    Carousel.appendCarousel(newImg);
-  });
 
-  //Activate buttons on the carousel
-  Carousel.start();
+
+      Carousel.clear();
+      clearInfo();
+
+      //Add all favorites img to carousel
+      favorites.forEach((img) => {
+          let newImg = Carousel.createCarouselItem(img.image.url, "...", img.image.id);
+          Carousel.appendCarousel(newImg);
+      });
+
+      //Activate buttons on the carousel
+      Carousel.start();
+
+} catch (err) {
+  console.log(err);
+}
 
 
 
