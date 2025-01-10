@@ -258,6 +258,7 @@ async function allFavImg () {
       params: {
         sub_id: user,
         limit: 100, // Max limit in API
+        order: "DESC", // Order by newest first
       },
       onDownloadProgress: updateProgress,
     });
@@ -300,7 +301,8 @@ export async function favourite(imgId) {
         const deleteResponse = await axiosInstance.delete(`/favourites/${favorite.id}`);
         const dataDelete = await deleteResponse.data;
         //console.log(dataDelete);
-        console.log("Img deleted from Favorites.");
+        //console.log("Img deleted from Favorites.");
+        alert('You deleted this picture from Favorite');
       } else {
         // If not favorited, send POST request
         console.log(`Image not favorited. Adding to favorites.`);
@@ -308,7 +310,8 @@ export async function favourite(imgId) {
         const postResponse = await axiosInstance.post("/favourites", load);
         const dataPost = await postResponse.data;
         //console.log(dataPost);
-        console.log("Img added to Favorite.");
+        //console.log("Img added to Favorite.");
+        alert('You added this picture to Favorite');
       }
 
 
