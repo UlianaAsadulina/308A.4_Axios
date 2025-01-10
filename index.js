@@ -140,6 +140,25 @@ function retrieveBreedInfo() {
   }
 }
 
+function clearInfo() {
+  infoDump.innerHTML = '';
+}
+
+function addArrayOfImages (array) {
+    // Clear the carousel 
+    Carousel.clear();
+
+    //Add all img
+    array.forEach((img) => {
+      let newImg = Carousel.createCarouselItem(img.url, "...", img.id);
+      Carousel.appendCarousel(newImg);
+    });
+
+    //Activate buttons on the carousel
+    Carousel.start();
+
+}
+
 async function retrieveBreedImg() {
   try {
     const breedId = breedSelect.value;
@@ -157,9 +176,12 @@ async function retrieveBreedImg() {
 
     // console.log(data);
 
-    // Clear the carousel
+    // Clear the info section
+    clearInfo();
+    addArrayOfImages(data);
+    /** 
     Carousel.clear();
-    infoDump.textContent = "";
+    infoDump.innerHTML = '';
 
     data.forEach((img) => {
       let breedImg = Carousel.createCarouselItem(img.url, "...", img.id);
@@ -167,7 +189,7 @@ async function retrieveBreedImg() {
     });
 
     //Activate buttons on the carousel
-    Carousel.start();
+    Carousel.start();*/
 
     // Call for information about selected breed
     retrieveBreedInfo();
@@ -205,6 +227,9 @@ breedSelect.addEventListener("change", retrieveBreedImg);
  * - In your response interceptor, remove the progress cursor style from the body element.
  */
 
+
+
+
 /**
  * 8. To practice posting data, we'll create a system to "favourite" certain images.
  * - The skeleton of this function has already been created for you.
@@ -216,8 +241,37 @@ breedSelect.addEventListener("change", retrieveBreedImg);
  *   you delete that favourite using the API, giving this function "toggle" functionality.
  * - You can call this function by clicking on the heart at the top right of any image.
  */
+
+
+const user = "Uliana S. Asadulina";
+
+
+
 export async function favourite(imgId) {
-  // your code here
+  try {
+    const response = await axios.post(
+      "https://api.thecatapi.com/v1/favourites",
+      {
+        image_id: imgId,
+        sub_id: 'user-123',
+      },
+      {
+        headers: { "x-api-key": API_KEY },
+      }
+    );
+
+    const data = await response.data;
+    console.log(data);
+
+
+
+
+
+
+
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 /**
@@ -229,6 +283,35 @@ export async function favourite(imgId) {
  *    If that isn't in its own function, maybe it should be so you don't have to
  *    repeat yourself in this section.
  */
+
+async function getFavorites() {
+
+  // Fetch the list of favorites pictures
+  const response = await axios.get("https://api.thecatapi.com/v1/favourites?limit=30&sub_id=user-123&order=DESC", { 
+    headers, 
+    onDownloadProgress: updateProgress, 
+  });
+
+  const data = await response.data;
+  console.log(data);
+
+  Carousel.clear();
+  clearInfo();
+
+  //Add all favorites img to carousel
+  data.forEach((img) => {
+    let newImg = Carousel.createCarouselItem(img.image.url, "...", img.image.id);
+    Carousel.appendCarousel(newImg);
+  });
+
+  //Activate buttons on the carousel
+  Carousel.start();
+
+
+
+}
+
+getFavouritesBtn.addEventListener("click", getFavorites);
 
 /**
  * 10. Test your site, thoroughly!
