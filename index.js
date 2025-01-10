@@ -71,7 +71,7 @@ axios.interceptors.response.use(
 
 // Update the progress of the request
 function updateProgress (progressEvent) {
-  console.log(progressEvent);
+  //console.log(progressEvent);
   const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total);
   console.log(percentage+"%");
 
@@ -141,6 +141,7 @@ async function retrieveBreedImg() {
       `https://api.thecatapi.com/v1/images/search?breed_ids=${breedId}&limit=6`,
       {
         headers,
+        onDownloadProgress: updateProgress, 
       }
     );
 
