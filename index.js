@@ -46,6 +46,10 @@ axios.interceptors.request.use(request => {
   request.metadata.startTime = new Date().getTime();
  // reset the progress with each request.
   progressBar.style.width = "0%";
+
+  //In your request interceptor, set the body element's cursor style to "progress."
+  document.body.style.cursor = "progress";
+
   return request;
 });
 
@@ -57,7 +61,11 @@ axios.interceptors.response.use(
       //console.log(`Recieve data at ${response.config.metadata.endTime}`);
       response.config.metadata.durationInMS = response.config.metadata.endTime - response.config.metadata.startTime;
 
-      console.log(`Request took ${response.config.metadata.durationInMS} milliseconds.`)
+      console.log(`Request took ${response.config.metadata.durationInMS} milliseconds.`);
+
+      //In your response interceptor, remove the progress cursor style from the body element.
+      document.body.style.cursor = "auto";
+
       return response;
   },
   (error) => {
