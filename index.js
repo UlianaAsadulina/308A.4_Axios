@@ -24,11 +24,6 @@ const API_KEY = "live_V1hbANkwoLecakcBbdq9WVvBt2jlOO1R70PJ8n0ch66XNgYHuI03Wa9fsO
  */
 
 
-// Reuse the API key for headers
-const headers = {
-  "Content-Type": "application/json",
-  "x-api-key": API_KEY,
-};
 
 
 const axiosInstance = axios.create({
@@ -130,15 +125,16 @@ function retrieveBreedInfo() {
 
     // Find the selected breed's information
     const selectedBreed = breeds.find((breed) => breed.id === breedId);
+    console.log(selectedBreed);
 
     if (selectedBreed) {
       // Create and append breed information
       const breedInfo = `
-          <h2>${selectedBreed.name}</h2>;
-          <p>${selectedBreed.description}</p>;
-          <p><strong>Temperament:</strong> ${selectedBreed.temperament}</p>;
-          <p><strong>Origin:</strong> ${selectedBreed.origin}</p>;
-          <p><strong>Life Span:</strong> ${selectedBreed.life_span} years</p>;
+          <h2>${selectedBreed.name}</h2>
+          <p>${selectedBreed.description}</p>
+          <p><strong>Origin:</strong> ${selectedBreed.origin}</p>
+          <p><strong>Temperament:</strong> ${selectedBreed.temperament}</p>          
+          <p><strong>Life Span:</strong> ${selectedBreed.life_span} years</p>
       `;
       infoDump.innerHTML = breedInfo;
     }
@@ -201,8 +197,6 @@ breedSelect.addEventListener("change", retrieveBreedImg);
 
 
 
-
-
 /**
  * 6. Next, we'll create a progress bar to indicate the request is in progress.
  * - The progressBar element has already been created for you.
@@ -240,8 +234,6 @@ breedSelect.addEventListener("change", retrieveBreedImg);
  * - You can call this function by clicking on the heart at the top right of any image.
  */
 
-
-
 const user = "Uliana";
 
 async function allFavImg () {
@@ -259,12 +251,9 @@ async function allFavImg () {
     //console.log(favorites);
 
     return favorites;
-
-
   } catch (err) {
     console.log(err);
-  }
-  
+  }  
 }
 
 export async function favourite(imgId) {
@@ -280,7 +269,7 @@ export async function favourite(imgId) {
       const favorite = favorites.find((fav) => fav.image_id === imgId);
 
       if (favorite) {
-        // If already favorited, send DELETE request
+        // send DELETE request
         console.log(`Image already in Favorites. Deleting favorite with ID: ${favorite.id}`);
 
         const deleteResponse = await axiosInstance.delete(`/favourites/${favorite.id}`);
@@ -288,9 +277,8 @@ export async function favourite(imgId) {
     
         alert('You deleted this picture from Favorite');
       } else {
-        // If not favorited, send POST request
-        console.log(`Image not favorited. Adding to favorites.`);
-       
+        // send POST request
+        console.log(`Image not favorited. Adding to favorites.`);       
         const postResponse = await axiosInstance.post("/favourites", load);
         const dataPost = await postResponse.data;
       
