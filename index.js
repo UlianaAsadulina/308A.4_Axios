@@ -20,12 +20,7 @@ const API_KEY = "live_V1hbANkwoLecakcBbdq9WVvBt2jlOO1R70PJ8n0ch66XNgYHuI03Wa9fsO
 
 /**
  * 4. Change all of your fetch() functions to axios!
-    * - axios has already been imported for you within index.js.
-    * - If you've done everything correctly up to this point, this should be simple.
-    * - If it is not simple, take a moment to re-evaluate your original code.
-    * - Hint: Axios has the ability to set default headers. Use this to your advantage
-    *   by setting a default header with your API key so that you do not have to
-    *   send it manually with all of your requests! You can also set a default base URL!
+  
  */
 
 
@@ -37,12 +32,20 @@ const headers = {
 
 let breeds = [];
 
+
+/**
+ * 5. Add axios interceptors to log the time between request and response to the console.
+
+ */
+
+
 //Add axios interceptors for start point.
 
 axios.interceptors.request.use(request => {
   request.metadata = request.metadata || {};
   request.metadata.startTime = new Date().getTime();
-  //console.log(`Start request at ${request.metadata.startTime}`);
+ // reset the progress with each request.
+  progressBar.style.width = "0%";
   return request;
 });
 
@@ -66,13 +69,27 @@ axios.interceptors.response.use(
 });
 
 
+// Update the progress of the request
+function updateProgress (progressEvent) {
+  console.log(progressEvent);
+  const percentage = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+  console.log(percentage+"%");
+
+  //modify progressBar width style property to align with the request progress.
+  progressBar.style.width = percentage+"%";
+
+ 
+
+}
+
 
 async function initialLoad() {
   try {
     // Fetch the list of cat breeds
-    const response = await axios.get("https://api.thecatapi.com/v1/breeds", {
-      headers,
-    });
+    const response = await axios.get("https://api.thecatapi.com/v1/breeds", { 
+      headers, 
+      onDownloadProgress: updateProgress, 
+  });
 
     breeds = await response.data;
  
@@ -82,7 +99,6 @@ async function initialLoad() {
       let option = document.createElement("option");
       option.setAttribute("value", breed.id); // Set the value to the breed ID
       option.textContent = breed.name; // Set the displayed text to the breed name
-
       breedSelect.appendChild(option); // Append the option to the select element
     });
   } catch (err) {
@@ -112,7 +128,7 @@ function retrieveBreedInfo() {
       infoDump.innerHTML = breedInfo;
     }
   } catch (err) {
-    console.error("Error fetching breed info:", err);
+    console.log(err);
   }
 }
 
@@ -131,6 +147,7 @@ async function retrieveBreedImg() {
     const data = await response.data;
 
     // console.log(data);
+
     // Clear the carousel
     Carousel.clear();
     infoDump.textContent = "";
@@ -143,7 +160,7 @@ async function retrieveBreedImg() {
     //Activate buttons on the carousel
     Carousel.start();
 
-    // Create an informational section in the infoDump
+    // Call for information about selected breed
     retrieveBreedInfo();
 
   } catch (err) {
@@ -156,12 +173,6 @@ breedSelect.addEventListener("change", retrieveBreedImg);
 
 
 
-/**
- * 5. Add axios interceptors to log the time between request and response to the console.
- * - Hint: you already have access to code that does this!
- * - Add a console.log statement to indicate when requests begin.
- * - As an added challenge, try to do this on your own without referencing the lesson material.
- */
 
 /**
  * 6. Next, we'll create a progress bar to indicate the request is in progress.
